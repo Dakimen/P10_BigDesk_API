@@ -1,0 +1,30 @@
+{%extends 'custom_auth/base.html'%}
+
+{%block content%}
+<h2>Inscrivez-vous</h2>
+<form class="sign-up-form" method="post">
+    {%csrf_token%}
+    {{ form.non_field_errors }}
+    <div>
+        {{ form.username }}
+    </div>
+    <div>
+        {{ form.password1 }}
+    </div>
+    <div>
+        {{ form.password2 }}
+    </div>
+    <div>
+        <label for="id_can_be_contacted">{{form.can_be_contacted.label}} (facultatif)</label>
+        {{form.can_be_contacted}}
+    </div>
+    <div>
+        <label for="id_can_data_be_shared">{{form.can_data_be_shared.label}} (facultatif)</label>
+        {{form.can_data_be_shared}}
+    </div>
+    <div class="buttons">
+        <a href="{% url 'landing' %}">Retourner</a>
+        <input id="sign-up_submit" type="submit" value="S'inscrire">
+    </div>
+</form>
+{%endblock%}
