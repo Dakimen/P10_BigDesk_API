@@ -24,7 +24,7 @@ class User(AbstractUser):
 
     groups = models.ManyToManyField(
         Group,
-        related_name='customauth_user_groups',  # Unique related_name for `groups`
+        related_name='customauth_user_groups',
         blank=True,
         help_text='The groups this user belongs to.',
         related_query_name='customauth_user'
@@ -32,7 +32,7 @@ class User(AbstractUser):
 
     user_permissions = models.ManyToManyField(
         Permission,
-        related_name='customauth_user_permissions',  # Unique related_name for `user_permissions`
+        related_name='customauth_user_permissions',
         blank=True,
         help_text='Specific permissions for this user.',
         related_query_name='customauth_user'
