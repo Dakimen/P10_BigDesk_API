@@ -21,7 +21,7 @@ class Project(models.Model):
         ('android', 'Android')
     ]
 
-    author = models.ForeignKey(Contributor,
+    author = models.ForeignKey(User,
                                on_delete=models.CASCADE,
                                related_name='project_author')
     name = models.CharField(max_length=255)
