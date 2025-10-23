@@ -10,7 +10,7 @@ class Contributor(models.Model):
                                 related_name='contributors')
 
     def __str__(self):
-        return f"{self.user.username} - {self.project.name} ({self.role})"
+        return f"{self.user.username} - {self.project.name}"
 
 
 class Project(models.Model):

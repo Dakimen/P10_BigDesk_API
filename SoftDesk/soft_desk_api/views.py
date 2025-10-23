@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
 
 from soft_desk_api.serializers import ProjectSerializer
-from soft_desk_api.models import Project
+from soft_desk_api.models import Project, Contributor
 from .permissions import IsProjectAuthorPermission
 
 
@@ -19,5 +19,6 @@ class ProjectViewset(ModelViewSet):
         ).distinct()
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        project = serializer.save(author=self.request.user)
+        Contributor.objects.create(user=self.request.user, project=project)
         return super().perform_create(serializer)
