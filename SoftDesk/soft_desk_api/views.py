@@ -1,14 +1,23 @@
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Q
 
 from soft_desk_api.serializers import ProjectSerializer
 from soft_desk_api.models import Project
+from .permissions import IsProjectAuthorPermission
 
 
 class ProjectViewset(ModelViewSet):
     serializer_class = ProjectSerializer
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsProjectAuthorPermission]
 
     def get_queryset(self):
-        return Project.objects.all()
+        user = self.request.user
+        return Project.objects.filter(
+            Q(author=user) | Q(contributors__user=user)
+        ).distinct()
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+        return super().perform_create(serializer)
