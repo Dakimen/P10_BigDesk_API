@@ -1,18 +1,22 @@
 """
 This module defines permission classes for the api.
 """
-from rest_framework.permissions import IsAuthenticated, BasePermission
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import (
+    IsAuthenticated, BasePermission, SAFE_METHODS
+    )
 
 
-class IsProjectAuthorPermission(IsAuthenticated):
+class IsAuthorPermission(IsAuthenticated):
     def has_object_permission(self, request, view, obj):
-        if view.action in ['update', 'partial_update', 'destroy']:
-            if obj.author != request.user:
-                raise PermissionDenied(
-                    "You do not have permission to modify this project."
-                    )
-        return True
+        if request.method in SAFE_METHODS:
+            return True
+        elif request.method == 'POST':
+            return True
+        elif request.method in ['PUT', 'PATCH', 'DELETE']:
+            if obj.author == request.user:
+                return True
+            else:
+                return False
 
 
 class IsAdminUser(BasePermission):
