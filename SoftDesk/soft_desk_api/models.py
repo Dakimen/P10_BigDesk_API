@@ -25,7 +25,7 @@ class Project(models.Model):
                                on_delete=models.CASCADE,
                                related_name='project_author')
     name = models.CharField(max_length=255)
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     project_type = models.CharField(choices=TYPE_CHOICES)
@@ -55,6 +55,8 @@ class Issue(models.Model):
 
     author = models.ForeignKey(Contributor, on_delete=models.CASCADE,
                                related_name='issue_author')
+    name = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE,
                                 related_name='issues')
     status = models.CharField(choices=STATUS_CHOICES,

@@ -53,3 +53,7 @@ class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
             contributors.append(contributor)
         data = {'detail': 'Contributor(s) created successfully'}
         return Response(data=data, status=status.HTTP_201_CREATED)
+
+
+class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
+    serializer_class = None

@@ -18,17 +18,23 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_nested import routers
 
 from custom_auth.views import UserCreateView
-from soft_desk_api.views import ProjectViewset
+from soft_desk_api.views import ProjectViewset, IssueViewSet
 
 router = routers.SimpleRouter()
 router.register('projects', ProjectViewset, basename='projects')
+
+projects_router = routers.NestedSimpleRouter(router, 'projects',
+                                             lookup='projects')
+projects_router.register('issues', IssueViewSet, basename='issues')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('register/', UserCreateView.as_view(), name='register'),
     path('api/', include(router.urls)),
+    path('api/', include(projects_router.urls)),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
