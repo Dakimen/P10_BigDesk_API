@@ -5,9 +5,14 @@ from rest_framework.response import Response
 from django.db.models import Q
 from rest_framework import status
 
-from soft_desk_api.serializers import ProjectSerializer, ProjectDetailSerializer
-from soft_desk_api.models import Project, Contributor
-from .permissions import IsAuthorPermission, IsAdminUser
+from soft_desk_api.serializers import (
+    ProjectSerializer,
+    ProjectDetailSerializer,
+    IssueSerializer,
+    IssueDetailSerializer
+    )
+from soft_desk_api.models import Project, Contributor, Issue
+from .permissions import IsAuthor, IsAdminUser, IsContributor
 from custom_auth.models import User
 
 
@@ -15,7 +20,7 @@ class MultipleSerializerMixin:
     detail_serializer_class = None
 
     def get_serializer_class(self):
-        if self.action == 'retrieve' and self.detail_serializer_class is not None:
+        if self.action in ['retrieve', 'update', 'partial_update'] and self.detail_serializer_class is not None:
             return self.detail_serializer_class
         return super().get_serializer_class()
 
@@ -24,7 +29,7 @@ class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
     serializer_class = ProjectSerializer
     detail_serializer_class = ProjectDetailSerializer
 
-    permission_classes = [IsAuthenticated, IsAuthorPermission | IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAuthor | IsAdminUser]
 
     def get_queryset(self):
         user = self.request.user
@@ -56,4 +61,26 @@ class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
 
 
 class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
-    serializer_class = None
+    serializer_class = IssueSerializer
+    detail_serializer_class = IssueDetailSerializer
+
+    permission_classes = [IsAuthenticated, (IsAuthor | IsContributor)]
+
+    def get_queryset(self):
+        return Issue.objects.filter(project_id=self.kwargs['project_pk'])
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['project_id'] = self.kwargs['project_pk']
+        return context
+
+    def perform_create(self, serializer):
+        project = Project.objects.get(pk=self.kwargs['project_pk'])
+        serializer.context['project_id'] = self.kwargs['project_pk']
+        author = Contributor.objects.get(user=self.request.user,
+                                         project=project)
+        attribution = serializer.validated_data.get('attribution')
+        serializer.save(project=project,
+                        author=author,
+                        attribution=attribution)
+        return super().perform_create(serializer)
