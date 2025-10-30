@@ -6,7 +6,7 @@ from rest_framework.serializers import (
     )
 from rest_framework.exceptions import ValidationError
 
-from soft_desk_api.models import Project, Contributor, Issue
+from soft_desk_api.models import Project, Contributor, Issue, Comment
 from custom_auth.models import User
 
 
@@ -50,7 +50,7 @@ class IssueSerializer(ModelSerializer):
 
     class Meta:
         model = Issue
-        fields = ['id', 'name', 'status', 'attribution', 'description']
+        fields = ['id', 'name', 'status', 'attribution', 'description', 'flag']
         read_only_fields = ['id']
 
     def validate_attribution(self, value):
@@ -80,6 +80,7 @@ class IssueDetailSerializer(ModelSerializer):
         allow_null=True,
         allow_blank=True,
     )
+    author = CharField(source='author.user.username', read_only=True)
 
     class Meta:
         model = Issue
@@ -105,3 +106,23 @@ class IssueDetailSerializer(ModelSerializer):
                 )
 
         return contributor
+
+
+class CommentSerializer(ModelSerializer):
+    author = CharField(source='author.user.username', read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'uuid', 'author', 'description', 'created_at']
+        read_only_fields = ['id', 'uuid', 'author', 'created_at']
+
+
+class CommentDetailSerializer(ModelSerializer):
+    author = CharField(source='author.user.username', read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'uuid', 'issue', 'author', 'description',
+                  'created_at', 'updated_at']
+        read_only_fields = ['id', 'uuid', 'issue', 'author',
+                            'created_at', 'updated_at']

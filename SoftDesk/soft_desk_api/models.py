@@ -72,7 +72,7 @@ class Issue(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.project.name} - {self.status} - {self.priority}"
+        return f"{self.name} - {self.status} - {self.priority}"
 
 
 class Comment(models.Model):
@@ -86,4 +86,4 @@ class Comment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Commentaire par {self.author.user.username} sur {self.issue}"
+        return f"Comment by {self.author.user.username} on {self.issue}"

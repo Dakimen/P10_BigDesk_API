@@ -9,9 +9,11 @@ from soft_desk_api.serializers import (
     ProjectSerializer,
     ProjectDetailSerializer,
     IssueSerializer,
-    IssueDetailSerializer
+    IssueDetailSerializer,
+    CommentSerializer,
+    CommentDetailSerializer
     )
-from soft_desk_api.models import Project, Contributor, Issue
+from soft_desk_api.models import Project, Contributor, Issue, Comment
 from .permissions import IsAuthor, IsAdminUser, IsContributor
 from custom_auth.models import User
 
@@ -20,8 +22,9 @@ class MultipleSerializerMixin:
     detail_serializer_class = None
 
     def get_serializer_class(self):
-        if self.action in ['retrieve', 'update', 'partial_update'] and self.detail_serializer_class is not None:
-            return self.detail_serializer_class
+        if self.action in ['retrieve', 'update', 'partial_update']:
+            if self.detail_serializer_class is not None:
+                return self.detail_serializer_class
         return super().get_serializer_class()
 
 
@@ -60,7 +63,7 @@ class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
         return Response(data=data, status=status.HTTP_201_CREATED)
 
 
-class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
+class IssueViewset(MultipleSerializerMixin, ModelViewSet):
     serializer_class = IssueSerializer
     detail_serializer_class = IssueDetailSerializer
 
@@ -83,4 +86,20 @@ class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
         serializer.save(project=project,
                         author=author,
                         attribution=attribution)
+        return super().perform_create(serializer)
+
+
+class CommentViewset(MultipleSerializerMixin, ModelViewSet):
+    serializer_class = CommentSerializer
+    detail_serializer_class = CommentDetailSerializer
+
+    def get_queryset(self):
+        return Comment.objects.filter(issue_id=self.kwargs['issue_pk'])
+
+    def perform_create(self, serializer):
+        issue = Issue.objects.get(pk=self.kwargs['issue_pk'])
+        project = issue.project
+        author = Contributor.objects.get(user=self.request.user,
+                                         project=project)
+        serializer.save(author=author, issue=issue)
         return super().perform_create(serializer)
