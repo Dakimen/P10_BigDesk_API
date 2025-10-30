@@ -93,6 +93,8 @@ class CommentViewset(MultipleSerializerMixin, ModelViewSet):
     serializer_class = CommentSerializer
     detail_serializer_class = CommentDetailSerializer
 
+    permission_classes = [IsAuthenticated, (IsAuthor | IsContributor)]
+
     def get_queryset(self):
         return Comment.objects.filter(issue_id=self.kwargs['issue_pk'])
 
