@@ -54,23 +54,7 @@ class IssueSerializer(ModelSerializer):
         read_only_fields = ['id']
 
     def validate_attribution(self, value):
-        if not value:
-            return None
-        try:
-            user = User.objects.get(username=value)
-        except User.DoesNotExist:
-            raise ValidationError(
-                f"User with username '{value}' does not exist."
-                )
-        try:
-            contributor = Contributor.objects.get(
-                user=user, project=self.context['project_id']
-                )
-        except Contributor.DoesNotExist:
-            raise ValidationError(
-                f"User '{value}' is not a contributor to this project."
-                )
-
+        contributor = check_contributor(self.context['project_id'], value)
         return contributor
 
 
@@ -88,23 +72,7 @@ class IssueDetailSerializer(ModelSerializer):
         read_only_fields = ['id', 'author', 'created_at', 'updated_at']
 
     def validate_attribution(self, value):
-        if not value:
-            return None
-        try:
-            user = User.objects.get(username=value)
-        except User.DoesNotExist:
-            raise ValidationError(
-                f"User with username '{value}' does not exist."
-                )
-        try:
-            contributor = Contributor.objects.get(
-                user=user, project_id=self.context['project_id']
-                )
-        except Contributor.DoesNotExist:
-            raise ValidationError(
-                f"User '{value}' is not a contributor to this project."
-                )
-
+        contributor = check_contributor(self.context['project_id'], value)
         return contributor
 
 
@@ -126,3 +94,23 @@ class CommentDetailSerializer(ModelSerializer):
                   'created_at', 'updated_at']
         read_only_fields = ['id', 'uuid', 'issue', 'author',
                             'created_at', 'updated_at']
+
+
+def check_contributor(project_id, value):
+    if not value:
+        return None
+    try:
+        user = User.objects.get(username=value)
+    except User.DoesNotExist:
+        raise ValidationError(
+            f"User with username '{value}' does not exist."
+            )
+    try:
+        contributor = Contributor.objects.get(
+            user=user, project=project_id
+            )
+    except Contributor.DoesNotExist:
+        raise ValidationError(
+            f"User '{value}' is not a contributor to this project."
+            )
+    return contributor

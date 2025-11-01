@@ -12,11 +12,6 @@ class IsAuthor(IsAuthenticated):
         return bool(obj.author == request.user)
 
 
-class IsAdminUser(BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.is_staff)
-
-
 class IsContributor(BasePermission):
     def has_object_permission(self, request, view, obj):
         user = request.user

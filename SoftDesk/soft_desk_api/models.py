@@ -9,6 +9,9 @@ class Contributor(models.Model):
     project = models.ForeignKey('Project', on_delete=models.CASCADE,
                                 related_name='contributors')
 
+    class Meta:
+        unique_together = ('user', 'project')
+
     def __str__(self):
         return f"{self.user.username} - {self.project.name}"
 
