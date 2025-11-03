@@ -23,6 +23,8 @@ class IsContributor(BasePermission):
                 return True
             elif request.method in ['POST', 'DELETE', 'PUT']:
                 return False
+        else:
+            return False
 
 
 def get_project(obj):
