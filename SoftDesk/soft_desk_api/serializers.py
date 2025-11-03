@@ -2,7 +2,7 @@
 File containing serializers used by the soft_desk_api app.
 """
 from rest_framework.serializers import (
-    ModelSerializer, CharField, SlugRelatedField
+    ModelSerializer, CharField, SlugRelatedField, SerializerMethodField
     )
 from rest_framework.exceptions import ValidationError
 
@@ -19,23 +19,24 @@ class ContributorSerializer(ModelSerializer):
         read_only_fields = ['username', 'id']
 
 
-class ProjectSerializer(ModelSerializer):
-    author = SlugRelatedField(read_only=True, slug_field='username')
+class CommentSerializer(ModelSerializer):
+    author = CharField(source='author.user.username', read_only=True)
 
     class Meta:
-        model = Project
-        fields = ['name', 'id', 'author']
-        read_only_fields = ['author', 'id']
+        model = Comment
+        fields = ['id', 'uuid', 'author', 'description', 'created_at']
+        read_only_fields = ['id', 'uuid', 'author', 'created_at']
 
 
-class ProjectDetailSerializer(ModelSerializer):
-    author = SlugRelatedField(read_only=True, slug_field='username')
-    contributors = ContributorSerializer(many=True, read_only=True)
+class CommentDetailSerializer(ModelSerializer):
+    author = CharField(source='author.user.username', read_only=True)
 
     class Meta:
-        model = Project
-        fields = '__all__'
-        read_only_fields = ['author', 'id', 'created_at', 'updated_at']
+        model = Comment
+        fields = ['id', 'uuid', 'issue', 'author', 'description',
+                  'created_at', 'updated_at']
+        read_only_fields = ['id', 'uuid', 'issue', 'author',
+                            'created_at', 'updated_at']
 
 
 class IssueSerializer(ModelSerializer):
@@ -51,6 +52,18 @@ class IssueSerializer(ModelSerializer):
     class Meta:
         model = Issue
         fields = ['id', 'name', 'status', 'attribution', 'description', 'flag']
+        read_only_fields = ['id']
+
+    def validate_attribution(self, value):
+        contributor = check_contributor(self.context['project_id'], value)
+        return contributor
+
+
+class IssueLightSerializer(ModelSerializer):
+
+    class Meta:
+        model = Issue
+        fields = ['id', 'name', 'status']
         read_only_fields = ['id']
 
     def validate_attribution(self, value):
@@ -76,24 +89,29 @@ class IssueDetailSerializer(ModelSerializer):
         return contributor
 
 
-class CommentSerializer(ModelSerializer):
-    author = CharField(source='author.user.username', read_only=True)
+class ProjectSerializer(ModelSerializer):
+    author = SlugRelatedField(read_only=True, slug_field='username')
 
     class Meta:
-        model = Comment
-        fields = ['id', 'uuid', 'author', 'description', 'created_at']
-        read_only_fields = ['id', 'uuid', 'author', 'created_at']
+        model = Project
+        fields = ['name', 'id', 'author']
+        read_only_fields = ['author', 'id']
 
 
-class CommentDetailSerializer(ModelSerializer):
-    author = CharField(source='author.user.username', read_only=True)
+class ProjectDetailSerializer(ModelSerializer):
+    author = SlugRelatedField(read_only=True, slug_field='username')
+    contributors = ContributorSerializer(many=True, read_only=True)
+    issues = SerializerMethodField()
 
     class Meta:
-        model = Comment
-        fields = ['id', 'uuid', 'issue', 'author', 'description',
-                  'created_at', 'updated_at']
-        read_only_fields = ['id', 'uuid', 'issue', 'author',
-                            'created_at', 'updated_at']
+        model = Project
+        fields = '__all__'
+        read_only_fields = ['author', 'id', 'created_at',
+                            'updated_at', 'issues']
+
+    def get_issues(self, obj):
+        queryset = obj.issues.filter(status__in=['to do', 'in progress'])
+        return IssueLightSerializer(queryset, many=True).data
 
 
 def check_contributor(project_id, value):
