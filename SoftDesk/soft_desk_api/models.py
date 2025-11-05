@@ -56,7 +56,7 @@ class Issue(models.Model):
         ('task', 'Task')
     ]
 
-    author = models.ForeignKey(Contributor, on_delete=models.CASCADE,
+    author = models.ForeignKey(User, on_delete=models.CASCADE,
                                related_name='issue_author')
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
@@ -82,7 +82,7 @@ class Comment(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     issue = models.ForeignKey(Issue, on_delete=models.CASCADE,
                               related_name='comments')
-    author = models.ForeignKey(Contributor, on_delete=models.CASCADE,
+    author = models.ForeignKey(User, on_delete=models.CASCADE,
                                related_name='comment_author')
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)

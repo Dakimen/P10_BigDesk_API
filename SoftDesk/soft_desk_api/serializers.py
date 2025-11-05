@@ -15,8 +15,8 @@ class ContributorSerializer(ModelSerializer):
 
     class Meta:
         model = Contributor
-        fields = ['username', 'id']
-        read_only_fields = ['username', 'id']
+        fields = ['username']
+        read_only_fields = ['username']
 
 
 class CommentSerializer(ModelSerializer):
@@ -51,7 +51,7 @@ class IssueSerializer(ModelSerializer):
 
     class Meta:
         model = Issue
-        fields = ['id', 'name', 'status', 'attribution', 'description', 'flag']
+        fields = ['id', 'name', 'status', 'attribution', 'description']
         read_only_fields = ['id']
 
     def validate_attribution(self, value):
@@ -91,10 +91,14 @@ class IssueDetailSerializer(ModelSerializer):
 
 class ProjectSerializer(ModelSerializer):
     author = SlugRelatedField(read_only=True, slug_field='username')
+    description = CharField(
+        allow_blank=True, allow_null=True, write_only=True, required=False
+    )
+    project_type = CharField(write_only=True, required=True)
 
     class Meta:
         model = Project
-        fields = ['name', 'id', 'author']
+        fields = ['name', 'id', 'author', 'description', 'project_type']
         read_only_fields = ['author', 'id']
 
 
