@@ -36,5 +36,4 @@ class UserDeleteView(APIView):
     def delete(self, request):
         user = request.user
         user.delete()
-        return Response({'detail': 'Account deleted successfully'},
-                        status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_204_NO_CONTENT)
