@@ -21,7 +21,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView, TokenRefreshView)
 from rest_framework_nested.routers import NestedSimpleRouter
 
-from custom_auth.views import UserCreateView
+from custom_auth.views import UserCreateView, UserDeleteView
 from soft_desk_api.views import ProjectViewset, IssueViewset, CommentViewset
 
 router = routers.SimpleRouter()
@@ -37,6 +37,7 @@ issues_router.register('comments', CommentViewset, basename='comments')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('register/', UserCreateView.as_view(), name='register'),
+    path('delete-account/', UserDeleteView.as_view(), name='delete-account'),
     path('api/', include(router.urls)),
     path('api/', include(projects_router.urls)),
     path('api/', include(issues_router.urls)),
