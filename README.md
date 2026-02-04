@@ -1,6 +1,6 @@
 # P10_BigDesk_API
 
-API project
+A Django REST Framework API for managing projects, issues, users, and related data with authentication and role-based access control.
 
 ## Launching the API
 
